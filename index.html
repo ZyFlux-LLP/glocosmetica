@@ -354,8 +354,8 @@
 
         // GSAP Initialization
         document.addEventListener("DOMContentLoaded", () => {
-            // Disable lag smoothing so fast CDN loads don't cause GSAP to rush through animations
-            gsap.ticker.lagSmoothing(0);
+            // Cap GSAP's lag compensation — prevents it from jumping ahead when CDN loads assets fast
+            gsap.ticker.lagSmoothing(500, 33);
 
             // Video plays freely behind the cover — no opacity tricks, so frames are always rendered
             const heroVideo = document.querySelector('.hero-bg-video');
@@ -364,7 +364,7 @@
             gsap.set(".hero-title", { opacity: 0, y: 30 });
             gsap.set(".hero-btn", { opacity: 0, scale: 0.9 });
 
-            const tl = gsap.timeline({ delay: 0.1,
+            const tl = gsap.timeline({ delay: 0.8,
                 onComplete: () => {
                     document.body.style.overflowY = "auto";
                     document.getElementById('loader-content').remove();
@@ -374,16 +374,16 @@
 
             const counterObj = { value: 0 };
 
-            tl.to("#brand-logo", { duration: 2, opacity: 1, scale: 1, filter: "blur(0px)", ease: "power3.out" })
-              .to("#loading-ui", { duration: 1, opacity: 1, ease: "power2.out" }, "-=1.5")
-              .to("#track-fill", { duration: 2, width: "100%", ease: "expo.inOut" }, "-=1")
+            tl.to("#brand-logo", { duration: 2.5, opacity: 1, scale: 1, filter: "blur(0px)", ease: "power3.out" })
+              .to("#loading-ui", { duration: 1, opacity: 1, ease: "power2.out" }, "-=2")
+              .to("#track-fill", { duration: 2.5, width: "100%", ease: "expo.inOut" }, "-=1")
               .to(counterObj, {
-                  duration: 2, value: 100, roundProps: "value", ease: "expo.inOut",
+                  duration: 2.5, value: 100, roundProps: "value", ease: "expo.inOut",
                   onUpdate: () => document.getElementById("counter").innerText = counterObj.value + "%"
               }, "<")
-              .to("#loader-content", { duration: 0.6, opacity: 0, scale: 0.95, ease: "power2.inOut" })
-              .to(".shutter-top", { duration: 1.2, yPercent: -100, ease: "expo.inOut", onStart: () => { heroVideo.currentTime = 0; } }, "-=0.2")
-              .to(".shutter-bottom", { duration: 1.2, yPercent: 100, ease: "expo.inOut" }, "<");
+              .to("#loader-content", { duration: 0.8, opacity: 0, scale: 0.95, ease: "power2.inOut" })
+              .to(".shutter-top", { duration: 1.4, yPercent: -100, ease: "expo.inOut", onStart: () => { heroVideo.currentTime = 0; } }, "-=0.2")
+              .to(".shutter-bottom", { duration: 1.4, yPercent: 100, ease: "expo.inOut" }, "<");
 
             function initHeroAnimations() {
                 const heroTl = gsap.timeline();
