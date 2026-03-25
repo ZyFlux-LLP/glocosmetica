@@ -354,6 +354,9 @@
 
         // GSAP Initialization
         document.addEventListener("DOMContentLoaded", () => {
+            // Disable lag smoothing so fast CDN loads don't cause GSAP to rush through animations
+            gsap.ticker.lagSmoothing(0);
+
             // Video plays freely behind the cover — no opacity tricks, so frames are always rendered
             const heroVideo = document.querySelector('.hero-bg-video');
             heroVideo.currentTime = 0;
@@ -361,7 +364,7 @@
             gsap.set(".hero-title", { opacity: 0, y: 30 });
             gsap.set(".hero-btn", { opacity: 0, scale: 0.9 });
 
-            const tl = gsap.timeline({
+            const tl = gsap.timeline({ delay: 0.1,
                 onComplete: () => {
                     document.body.style.overflowY = "auto";
                     document.getElementById('loader-content').remove();
