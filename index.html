@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glo Cosmetica | Skincare Collections</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <style>
+        :root {
+            --glo-pink: #f45d79;
+            --bg-color: #ffffff;
+            --bg-light: #f9f9f9;
+            --text-dark: #111111;
+            --text-muted: #666666;
+            --font-serif: 'Playfair Display', serif;
+            --font-sans: 'Inter', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: var(--font-sans); background-color: var(--bg-light); color: var(--text-dark); overflow-x: hidden; overflow-y: hidden; }
+
+        /* --- LOADER --- */
+        .shutter { position: fixed; left: 0; width: 100vw; height: calc(50vh + 1px); background-color: var(--bg-color); z-index: 9998; }
+        .shutter-top { top: 0; }
+        .shutter-bottom { bottom: 0; }
+        #loader-content { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; pointer-events: none; }
+        #brand-logo { width: 180px; filter: blur(20px); transform: scale(1.5); opacity: 0; }
+        .loading-ui { position: absolute; bottom: 10%; display: flex; align-items: center; gap: 15px; opacity: 0; }
+        .counter { font-size: 14px; font-weight: 500; letter-spacing: 2px; width: 40px; text-align: right; }
+        .track { width: 100px; height: 1px; background-color: #e0e0e0; position: relative; }
+        .track-fill { position: absolute; top: 0; left: 0; width: 0%; height: 100%; background-color: var(--glo-pink); }
+
+        /* --- DYNAMIC NAVBAR --- */
+        nav {
+            position: fixed; top: 0; width: 100%; padding: 15px 5%;
+            display: flex; justify-content: space-between; align-items: center;
+            z-index: 100;
+            background: transparent;
+            border-bottom: 1px solid transparent;
+            transition: all 0.4s ease;
+            opacity: 0; transform: translateY(-20px);
+        }
+
+        nav.scrolled {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            padding: 10px 5%;
+        }
+
+        .nav-logo-img {
+            height: 65px;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.2));
+        }
+        nav.scrolled .nav-logo-img { filter: none; height: 55px; }
+
+        .nav-links { display: flex; gap: 20px; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; align-items: center; }
+
+        .nav-links a, .cart-btn {
+            color: #ffffff; text-decoration: none; transition: color 0.3s; cursor: pointer; font-weight: 500;
+            text-shadow: 0px 2px 4px rgba(0,0,0,0.5);
+        }
+        .cart-btn { background: none; border: none; font-family: var(--font-sans); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+
+        nav.scrolled .nav-links a, nav.scrolled .cart-btn { color: var(--text-dark); text-shadow: none; }
+        .nav-links a:hover, .cart-btn:hover { color: var(--glo-pink) !important; }
+
+        /* --- HERO VIDEO & MOBILE RESPONSIVENESS --- */
+        .hero { position: relative; height: 100vh; width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; overflow: hidden; background-color: #000; }
+
+        .hero-bg-video {
+            position: absolute; top: 0; left: 0; width: 100%;
+            height: 120vh;
+            object-fit: cover;
+            object-position: center;
+            z-index: 0; filter: brightness(0.70);
+        }
+
+        .hero-content { position: relative; z-index: 10; padding: 0 20px; color: #ffffff; max-width: 800px; margin-top: 40px; }
+        .hero h1 { font-family: var(--font-serif); font-size: 5rem; line-height: 1.1; margin-bottom: 20px; font-weight: 400; text-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        .hero h1 span { font-style: italic; }
+        .btn { display: inline-block; padding: 15px 40px; border-radius: 30px; background-color: var(--bg-color); color: var(--text-dark); text-decoration: none; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; transition: all 0.4s ease; border: 1px solid transparent; cursor: pointer; margin-top: 20px; font-weight: 500; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .btn:hover { background-color: var(--glo-pink); color: white; border-color: var(--glo-pink); }
+
+        @media (max-width: 768px) {
+            .hero-bg-video { height: 110vh; object-position: center 30%; }
+            .hero h1 { font-size: 3.2rem; }
+            .nav-links { gap: 15px; font-size: 11px; }
+            .cart-btn { font-size: 11px; }
+            .section { padding: 80px 5%; }
+            .section-header h2 { font-size: 2.2rem; }
+            .cart-drawer { width: 100%; }
+        }
+
+        /* --- COLLECTIONS --- */
+        .section { padding: 120px 5%; background-color: var(--bg-color); position: relative; z-index: 20; }
+        .section-header { text-align: center; margin-bottom: 80px; }
+        .section-header h2 { font-family: var(--font-serif); font-size: 3rem; font-weight: 400; margin-bottom: 15px; }
+
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 40px; }
+        .product-card { text-align: left; }
+        .product-img-wrap { overflow: hidden; margin-bottom: 20px; background-color: var(--bg-light); aspect-ratio: 4/5; position: relative; border-radius: 4px; border: 1px solid #f0f0f0; }
+        .product-img-wrap img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease; }
+        .product-card:hover .product-img-wrap img { transform: scale(1.05); }
+
+        .add-to-cart-btn { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(20px); opacity: 0; background: rgba(255,255,255,0.95); border: none; padding: 12px 25px; border-radius: 30px; font-family: var(--font-sans); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: all 0.3s ease; width: 80%; font-weight: 500; }
+        .product-card:hover .add-to-cart-btn { opacity: 1; transform: translateX(-50%) translateY(0); }
+        .add-to-cart-btn:hover { background: var(--glo-pink); color: white; }
+
+        .product-title { font-size: 1.1rem; margin-bottom: 5px; font-weight: 500; }
+        .product-price { font-family: var(--font-serif); font-size: 1.1rem; color: var(--glo-pink); margin-top: 5px; }
+
+        /* --- CART DRAWER --- */
+        .cart-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.4s ease; backdrop-filter: blur(4px); }
+        .cart-overlay.active { opacity: 1; pointer-events: all; }
+        .cart-drawer { position: fixed; top: 0; right: 0; width: 420px; max-width: 100vw; height: 100vh; background: var(--bg-color); z-index: 1001; transform: translateX(100%); display: flex; flex-direction: column; box-shadow: -5px 0 25px rgba(0,0,0,0.1); }
+        .cart-header { padding: 30px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+        .cart-header h2 { font-family: var(--font-serif); font-size: 1.8rem; font-weight: 400; }
+        .close-cart { background: none; border: none; font-size: 28px; cursor: pointer; color: var(--text-dark); transition: color 0.3s; line-height: 1; }
+        .close-cart:hover { color: var(--glo-pink); }
+        .cart-items { flex-grow: 1; overflow-y: auto; padding: 30px; display: flex; flex-direction: column; gap: 20px; }
+        .empty-cart-msg { text-align: center; color: var(--text-muted); font-style: italic; margin-top: 50px; }
+        .cart-item { display: flex; gap: 15px; align-items: center; }
+        .cart-item-img { width: 80px; height: 80px; object-fit: cover; border-radius: 4px; background: var(--bg-light); border: 1px solid #f0f0f0; }
+        .cart-item-info { flex-grow: 1; }
+        .cart-item-title { font-size: 1rem; font-weight: 500; margin-bottom: 5px; }
+        .cart-item-price { color: var(--glo-pink); font-family: var(--font-serif); font-size: 1.1rem; }
+        .remove-item { background: none; border: none; color: #aaa; text-transform: uppercase; font-size: 10px; cursor: pointer; margin-top: 5px; letter-spacing: 1px; transition: color 0.2s; }
+        .remove-item:hover { color: red; }
+        .cart-footer { padding: 30px; border-top: 1px solid #eee; background: var(--bg-light); }
+        .cart-total { display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: 600; margin-bottom: 20px; }
+        .checkout-btn { width: 100%; background: var(--text-dark); color: white; border: none; padding: 18px; border-radius: 30px; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: background 0.3s; }
+        .checkout-btn:hover { background: var(--glo-pink); }
+
+        /* --- FOOTER & CONTACT --- */
+        .site-footer { background-color: #f1f1f1; color: var(--text-dark); padding: 80px 5% 40px; border-top: 1px solid #e5e5e5; }
+        .footer-content { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 40px; margin-bottom: 60px; }
+        .footer-logo { height: 50px; margin-bottom: 20px; }
+        .footer-brand p { color: var(--text-muted); font-style: italic; }
+        .footer-section h3 { font-family: var(--font-serif); font-size: 1.5rem; margin-bottom: 20px; font-weight: 500; }
+        .footer-section p, .footer-section a { display: block; color: var(--text-muted); text-decoration: none; margin-bottom: 10px; font-size: 0.95rem; line-height: 1.6; transition: color 0.2s; }
+        .footer-section a:hover { color: var(--glo-pink); }
+        .footer-bottom { text-align: center; padding-top: 30px; border-top: 1px solid #ddd; color: #888; font-size: 0.85rem; }
+
+        .reveal-up { opacity: 0; transform: translateY(40px); }
+    </style>
+</head>
+<body>
+
+    <div class="shutter shutter-top"></div>
+    <div class="shutter shutter-bottom"></div>
+    <div id="loader-content">
+        <img src="nobg.png" alt="Glo Cosmetica" id="brand-logo">
+        <div class="loading-ui" id="loading-ui">
+            <div class="track"><div class="track-fill" id="track-fill"></div></div>
+            <div class="counter" id="counter">0%</div>
+        </div>
+    </div>
+
+    <nav class="navbar" id="main-nav">
+        <img src="nobg.png" alt="Glo Cosmetica" class="nav-logo-img" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+        <div class="nav-links">
+            <a href="#collections">Collections</a>
+            <a href="#contact">Contact</a>
+            <button class="cart-btn" id="open-cart-btn">Cart (<span id="cart-count">0</span>)</button>
+        </div>
+    </nav>
+
+    <div class="cart-overlay" id="cart-overlay"></div>
+    <div class="cart-drawer" id="cart-drawer">
+        <div class="cart-header">
+            <h2>Your Bag</h2>
+            <button class="close-cart" id="close-cart-btn">&times;</button>
+        </div>
+        <div class="cart-items" id="cart-items-container">
+            <div class="empty-cart-msg">Your skincare routine is looking a little empty.</div>
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>Subtotal</span>
+                <span id="cart-total-price">₹0</span>
+            </div>
+            <button class="checkout-btn">Proceed to Checkout</button>
+        </div>
+    </div>
+
+    <main id="main-wrapper">
+
+        <section class="hero">
+            <video class="hero-bg-video" autoplay loop muted playsinline preload="auto">
+                <source src="hero.mp4" type="video/mp4">
+            </video>
+            <div class="hero-content">
+                <h1 class="hero-title">Skincare That Loves<br><span>Your Skin</span> Back.</h1>
+                <a href="#collections" class="btn hero-btn">Shop Collections</a>
+            </div>
+        </section>
+
+        <section class="section" id="collections">
+            <div class="section-header reveal-up">
+                <h2>The Collections</h2>
+                <p style="color: var(--text-muted);">Formulated for everyday life. Ethically crafted.</p>
+            </div>
+
+            <div class="product-grid" id="product-grid">
+                </div>
+        </section>
+
+        <footer id="contact" class="site-footer">
+            <div class="footer-content reveal-up">
+                <div class="footer-brand">
+                    <img src="nobg.png" alt="Glo Cosmetica" class="footer-logo">
+                    <p>More Than Skincare.<br>It's Self-Care.</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Contact Us</h3>
+                    <p>Shop No. 4, Ground Floor, Keshav Sadan,<br>Lakhamsi Napoo Road, Matunga East,<br>Mumbai - 400019</p>
+                    <a href="tel:+917400153266">Phone: +91 74001 53266</a>
+                </div>
+                <div class="footer-section">
+                    <h3>Connect</h3>
+                    <a href="https://instagram.com/glocosmetica" target="_blank">Instagram: @glocosmetica</a>
+                    <a href="https://www.facebook.com/profile.php?id=100089239586181&ref=PROFILE_EDIT_xav_ig_profile_page_web" target="_blank">Facebook: glocosmetica</a>
+                    <a href="https://threads.net/@glocosmetica" target="_blank">Threads: glocosmetica</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Glo Cosmetica. All rights reserved.</p>
+            </div>
+        </footer>
+
+    </main>
+
+    <script>
+        gsap.registerPlugin(ScrollTrigger);
+
+        // --- DYNAMIC MINIMALIST PRODUCT MOCKUPS ---
+        // These will NEVER break, and they feature the exact product name in an elegant font.
+        const products = [
+            { id: 1, name: "Deep Repair Night Cream", type: "Nourishing overnight formula", price: 3499, img: "collections/night cream.jpg" },
+            { id: 2, name: "Hydrating Glow Serum", type: "Daily Defense SPF 50", price: 2999, img: "collections/glow serum.jpg" },
+            { id: 3, name: "Micellar Cleanser", type: "Infused with Witch Hazel", price: 1899, img: "collections/cleanser.jpg" },
+            { id: 4, name: "Radiant Face Oil", type: "100% Cold-pressed", price: 4199, img: "collections/face oil.jpg" },
+            { id: 5, name: "Vitamin C Essential Cream", type: "Fades dark spots", price: 2499, img: "collections/vitamin c.jpg" },
+            { id: 6, name: "Soothing Aloe Gel", type: "Calms inflammation", price: 1599, img: "collections/aloe gel.jpg" },
+            { id: 7, name: "Clarify Spot Corrector", type: "Targets blemishes", price: 2199, img: "collections/spot corrector.jpg" },
+            { id: 8, name: "Massage Body Gel", type: "Deep hydration", price: 2799, img: "collections/body gel.jpg" }
+        ];
+
+        let cart = [];
+        const formatINR = (amount) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(amount);
+
+        const productGrid = document.getElementById('product-grid');
+        products.forEach(product => {
+            const card = document.createElement('div');
+            card.className = 'product-card reveal-up';
+            card.innerHTML = `
+                <div class="product-img-wrap">
+                    <img src="${product.img}" alt="${product.name}" loading="lazy">
+                    <button class="add-to-cart-btn" onclick="addToCart(${product.id})">Add to Cart</button>
+                </div>
+                <h3 class="product-title">${product.name}</h3>
+                <p class="product-desc" style="color:var(--text-muted); font-size: 0.9rem;">${product.type}</p>
+                <p class="product-price">${formatINR(product.price)}</p>
+            `;
+            productGrid.appendChild(card);
+        });
+
+        const updateCartUI = () => {
+            const container = document.getElementById('cart-items-container');
+            const countEl = document.getElementById('cart-count');
+            const totalEl = document.getElementById('cart-total-price');
+
+            countEl.innerText = cart.length;
+            container.innerHTML = '';
+
+            if (cart.length === 0) {
+                container.innerHTML = '<div class="empty-cart-msg">Your skincare routine is looking a little empty.</div>';
+                totalEl.innerText = '₹0';
+                return;
+            }
+
+            let total = 0;
+            cart.forEach((item, index) => {
+                total += item.price;
+                const cartItem = document.createElement('div');
+                cartItem.className = 'cart-item';
+                cartItem.innerHTML = `
+                    <img src="${item.img}" class="cart-item-img" alt="${item.name}">
+                    <div class="cart-item-info">
+                        <div class="cart-item-title">${item.name}</div>
+                        <div class="cart-item-price">${formatINR(item.price)}</div>
+                        <button class="remove-item" onclick="removeFromCart(${index})">Remove</button>
+                    </div>
+                `;
+                container.appendChild(cartItem);
+            });
+            totalEl.innerText = formatINR(total);
+        };
+
+        window.addToCart = (id) => {
+            const product = products.find(p => p.id === id);
+            cart.push(product);
+            updateCartUI();
+            openCart();
+        };
+
+        window.removeFromCart = (index) => {
+            cart.splice(index, 1);
+            updateCartUI();
+        };
+
+        const cartDrawer = document.getElementById('cart-drawer');
+        const cartOverlay = document.getElementById('cart-overlay');
+        let cartOpen = false;
+
+        const openCart = () => {
+            if (cartOpen) return;
+            cartOpen = true;
+            cartOverlay.classList.add('active');
+            gsap.to(cartDrawer, { duration: 0.5, x: 0, ease: "power3.out" });
+        };
+
+        const closeCart = () => {
+            if (!cartOpen) return;
+            cartOpen = false;
+            cartOverlay.classList.remove('active');
+            gsap.to(cartDrawer, { duration: 0.5, x: "100%", ease: "power3.in" });
+        };
+
+        document.getElementById('open-cart-btn').addEventListener('click', openCart);
+        document.getElementById('close-cart-btn').addEventListener('click', closeCart);
+        cartOverlay.addEventListener('click', closeCart);
+
+        // Navbar Scroll Event
+        const navbar = document.getElementById('main-nav');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // GSAP Initialization
+        document.addEventListener("DOMContentLoaded", () => {
+            // Video plays freely behind the cover — no opacity tricks, so frames are always rendered
+            const heroVideo = document.querySelector('.hero-bg-video');
+            heroVideo.currentTime = 0;
+            heroVideo.play();
+            gsap.set(".hero-title", { opacity: 0, y: 30 });
+            gsap.set(".hero-btn", { opacity: 0, scale: 0.9 });
+
+            const tl = gsap.timeline({
+                onComplete: () => {
+                    document.body.style.overflowY = "auto";
+                    document.getElementById('loader-content').remove();
+                    initHeroAnimations();
+                }
+            });
+
+            const counterObj = { value: 0 };
+
+            tl.to("#brand-logo", { duration: 2, opacity: 1, scale: 1, filter: "blur(0px)", ease: "power3.out" })
+              .to("#loading-ui", { duration: 1, opacity: 1, ease: "power2.out" }, "-=1.5")
+              .to("#track-fill", { duration: 2, width: "100%", ease: "expo.inOut" }, "-=1")
+              .to(counterObj, {
+                  duration: 2, value: 100, roundProps: "value", ease: "expo.inOut",
+                  onUpdate: () => document.getElementById("counter").innerText = counterObj.value + "%"
+              }, "<")
+              .to("#loader-content", { duration: 0.6, opacity: 0, scale: 0.95, ease: "power2.inOut" })
+              .to(".shutter-top", { duration: 1.2, yPercent: -100, ease: "expo.inOut", onStart: () => { heroVideo.currentTime = 0; } }, "-=0.2")
+              .to(".shutter-bottom", { duration: 1.2, yPercent: 100, ease: "expo.inOut" }, "<");
+
+            function initHeroAnimations() {
+                const heroTl = gsap.timeline();
+                heroTl.to(".navbar", { duration: 1, opacity: 1, y: 0, ease: "power3.out" })
+                .to(".hero-title", { duration: 1, opacity: 1, y: 0, ease: "power3.out" }, "-=0.5")
+                .to(".hero-btn", { duration: 0.8, opacity: 1, scale: 1, ease: "back.out(1.7)" }, "-=0.6");
+            }
+
+            const isMobile = window.innerWidth <= 768;
+
+            gsap.to(".hero-bg-video", {
+                yPercent: isMobile ? 5 : 15,
+                ease: "none",
+                scrollTrigger: { trigger: ".hero", start: "top top", end: "bottom top", scrub: true }
+            });
+
+            setTimeout(() => {
+                const revealElements = document.querySelectorAll(".reveal-up");
+                revealElements.forEach((el, index) => {
+                    gsap.to(el, {
+                        scrollTrigger: { trigger: el, start: "top 85%", toggleActions: "play none none reverse" },
+                        duration: 1, opacity: 1, y: 0, ease: "power3.out",
+                        delay: el.classList.contains('product-card') ? (index % (isMobile ? 2 : 4)) * 0.1 : 0
+                    });
+                });
+            }, 500);
+        });
+    </script>
+</body>
+</html>
